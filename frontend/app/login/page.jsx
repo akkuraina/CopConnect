@@ -12,14 +12,14 @@ const Login = () => {
 
   const [isSignup, setIsSignup] = useState(false);
   const [credentials, setCredentials] = useState({
-    badgeNumber: "",
     name: "",
-    email: "",
-    mobile: "",
+    phone: "",
+    badgeNumber: "",
     adminId: "",
     password: "",
   });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!role || !["police", "citizen", "admin", "anonymous"].includes(role)) {
@@ -31,62 +31,49 @@ const Login = () => {
     }
   }, [role, router]);
 
-  const handleAuth = (e) => {
+  const handleChange = (e) => {
+    e.preventDefault()
+    const { name, value } = e.target;
+    setCredentials((prev) => ({
+      ...prev,
+      [name]: value,  // Dynamically update the correct field
+    }));
+  };
+
+  const handleAuth = async (e) => {
     e.preventDefault();
-    let users = JSON.parse(localStorage.getItem("users")) || {
-      police: {},
-      citizen: {},
-      admin: {},
-    };
+    setError("");
+    setLoading(true);
 
-    if (isSignup) {
-      if (role === "police" && credentials.badgeNumber && credentials.name) {
-        users.police[credentials.badgeNumber] = { name: credentials.name };
-      } else if (
-        role === "citizen" &&
-        credentials.email &&
-        credentials.mobile
-      ) {
-        users.citizen[credentials.email] = { mobile: credentials.mobile };
-      } else if (
-        role === "admin" &&
-        credentials.adminId &&
-        credentials.password
-      ) {
-        users.admin[credentials.adminId] = { password: credentials.password };
-      } else {
-        setError("❌ Please fill all fields.");
-        return;
+    const endpoint = isSignup ? "http://localhost:5001/api/users/register" : "http://localhost:5001/api/users/login";
+    const payload = { ...credentials, role };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong");
       }
-      localStorage.setItem("users", JSON.stringify(users));
-      sessionStorage.setItem("loggedIn", role);
-      router.push(`/dashboard/${role}Dashboard`);
-      return;
-    }
 
-    let validUser = false;
-    if (
-      role === "police" &&
-      users.police[credentials.badgeNumber]?.name === credentials.name
-    ) {
-      validUser = true;
-    } else if (
-      role === "citizen" &&
-      users.citizen[credentials.email]?.mobile === credentials.mobile
-    ) {
-      validUser = true;
-    } else if (
-      role === "admin" &&
-      users.admin[credentials.adminId]?.password === credentials.password
-    ) {
-      validUser = true;
-    }
-
-    if (validUser) {
-      sessionStorage.setItem("loggedIn", role);
-      router.push(`/dashboard/${role}Dashboard`);
-    } else {
-      setError("❌ Invalid credentials");
+      if (data.token) {
+        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("role", role);
+        router.push(`/dashboard/${role}Dashboard`);
+      } else {
+        setError("❌ Unexpected error, please try again.");
+      }
+    } catch (error) {
+      setError(`❌ ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,52 +98,39 @@ const Login = () => {
                   <>
                     <input
                       type="text"
+                      name="badgeNumber"
                       placeholder="Badge Number"
                       className="w-full p-3 rounded-lg bg-gray-700 text-white focus:ring focus:ring-blue-500"
                       value={credentials.badgeNumber}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          badgeNumber: e.target.value,
-                        })
-                      }
+                      onChange={handleChange} 
                     />
                     <input
                       type="text"
+                      name="name"
                       placeholder="Name"
                       className="w-full p-3 rounded-lg bg-gray-700 text-white focus:ring focus:ring-blue-500"
                       value={credentials.name}
-                      onChange={(e) =>
-                        setCredentials({ ...credentials, name: e.target.value })
-                      }
+                      onChange={handleChange} 
                     />
                   </>
                 )}
                 {role === "citizen" && (
                   <>
                     <input
-                      type="email"
-                      placeholder="Email"
+                      type="string"
+                      name="name"
+                      placeholder="Name"
                       className="w-full p-3 rounded-lg bg-gray-700 text-white focus:ring focus:ring-blue-500"
-                      value={credentials.email}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          email: e.target.value,
-                        })
-                      }
+                      value={credentials.name}
+                      onChange={handleChange} 
                     />
                     <input
-                      type="text"
+                      type="Number"
+                      name="phone"
                       placeholder="Mobile Number"
                       className="w-full p-3 rounded-lg bg-gray-700 text-white focus:ring focus:ring-blue-500"
                       value={credentials.mobile}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          mobile: e.target.value,
-                        })
-                      }
+                      onChange={handleChange} 
                     />
                   </>
                 )}
@@ -165,26 +139,18 @@ const Login = () => {
                     <input
                       type="text"
                       placeholder="Admin ID"
+                      name="adminId"
                       className="w-full p-3 rounded-lg bg-gray-700 text-white focus:ring focus:ring-blue-500"
                       value={credentials.adminId}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          adminId: e.target.value,
-                        })
-                      }
+                      onChange={handleChange} 
                     />
                     <input
                       type="password"
+                      name="password"
                       placeholder="Password"
                       className="w-full p-3 rounded-lg bg-gray-700 text-white focus:ring focus:ring-blue-500"
                       value={credentials.password}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          password: e.target.value,
-                        })
-                      }
+                      onChange={handleChange} 
                     />
                   </>
                 )}
