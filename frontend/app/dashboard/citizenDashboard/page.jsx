@@ -57,22 +57,20 @@ const CitizenDashboard = () => {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Report Incident Card */}
-<div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white border border-blue-400/20 hover:shadow-lg hover:shadow-blue-500/20 transform hover:-translate-y-1 transition-all duration-300 flex justify-center items-center">
-  <div className="flex flex-col items-center text-center space-y-4">
-    <div className="bg-white/10 p-3 rounded-lg">
-      <AlertTriangle className="h-6 w-6 text-white" />
-    </div>
-    <div>
-      <h2 className="text-xl font-semibold">Report Incident</h2>
-      <Link href="/supportPages/CitizenReport">
-        <button className="mt-4 w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg font-semibold transition-colors">
-          File New Report
-        </button>
-      </Link>
-    </div>
-  </div>
-  
-
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white border border-blue-400/20 hover:shadow-lg hover:shadow-blue-500/20 transform hover:-translate-y-1 transition-all duration-300 flex justify-center items-center">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-white/10 p-3 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Report Incident</h2>
+                <Link href="/supportPages/CitizenReport">
+                  <button className="mt-4 w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg font-semibold transition-colors">
+                    File New Report
+                  </button>
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Track Complaint Card */}
