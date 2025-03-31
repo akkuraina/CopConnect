@@ -10,7 +10,7 @@ import complaintRoutes from './routes/complaintRoutes.js';
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app); // Create HTTP server
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -35,15 +35,17 @@ io.on("connection", (socket) => {
   });
 });
 
-// Middleware to attach io instance to requests
-app.use((req, res, next) => {
-  req.io = io; 
-  next();
-});
-
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/complaints', complaintRoutes);
 
+// ✅ Add this route to prevent 404 errors on root URL
+app.get('/', (req, res) => {
+  res.send('CopConnect Backend is Running');
+});
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Export io instance
+export { io };
