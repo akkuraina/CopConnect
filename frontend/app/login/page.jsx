@@ -66,6 +66,7 @@ const Login = () => {
       if (data.token) {
         sessionStorage.setItem("token", data.token);
         sessionStorage.setItem("role", role);
+        sessionStorage.setItem("data", JSON.stringify(data));
         router.push(`/dashboard/${role}Dashboard`);
       } else {
         setError("❌ Unexpected error, please try again.");

@@ -1,28 +1,53 @@
-"use client";
-import Footer from "@/app/HelpingComponents/Footer";
-import React, { useState, useEffect } from "react";
+'use client'
+import {
+  FileText,
+  MapPin,
+} from "lucide-react";
+import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
-import { MapPin, FileText, AlertTriangle } from "react-feather"; 
+import { jwtDecode } from "jwt-decode"; // Correct import
 
-const socket = io("http://localhost:5001"); // Update with your backend URL
+
+const socket = io("http://localhost:5001"); // Update with backend URL
 
 const FileReportPage = () => {
   const [reportData, setReportData] = useState({
     type: "",
     description: "",
     location: "",
-    severity: "low",
+    filedBy: "", // Set dynamically after decoding token
+    phone: "",   // Store user's phone number
   });
 
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
+    // Get user info from JWT token in sessionStorage
+    const token = sessionStorage.getItem("token");
+    const data = JSON.parse(sessionStorage.getItem("data"));
+    if (token) {
+      try {
+        const decoded_token = jwtDecode(token); // Decode token
+        console.log("Decoded Token:", decoded_token);
+        console.log("full data:", data);
+        console.log("name inside data: ",data.user.name);
+
+        setReportData((prevState) => ({
+          ...prevState,
+          filedBy: data.user.name, // Set filedBy to user's name
+          phone: data.user.phone,  // Set phone number
+        }));
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+
     // Listen for real-time updates
     socket.on("new_complaint", (complaint) => {
       console.log("New complaint received:", complaint);
       setMessage(`New complaint submitted: ${complaint.type}`);
-      
-      // Auto-hide the message after 5 seconds
+
+      // Auto-hide message after 5 seconds
       setTimeout(() => setMessage(null), 5000);
     });
 
@@ -33,7 +58,7 @@ const FileReportPage = () => {
     const { name, value } = e.target;
     setReportData((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]: value, // Only update the changed field
     }));
   };
 
@@ -41,9 +66,18 @@ const FileReportPage = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:3000/api/complaints", {
+      const token = sessionStorage.getItem("token");
+      // const data = sessionStorage.getItem("data");
+
+      console.log("Submitting now : ")
+      // console.log("Submitting with data:", data);
+
+      const response = await fetch("http://localhost:5001/api/reports/fileReport", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Ensure correct format
+        },
         body: JSON.stringify(reportData),
       });
 
@@ -51,7 +85,8 @@ const FileReportPage = () => {
 
       if (response.ok) {
         setMessage("Complaint filed successfully!");
-        setReportData({ type: "", description: "", location: "", severity: "low" });
+        socket.emit("new_complaint", data); // Notify backend
+        setReportData({ type: "", description: "", location: "", filedBy: reportData.filedBy, phone: reportData.phone });
       } else {
         setMessage(data.error || "Failed to submit complaint.");
       }
@@ -152,7 +187,7 @@ const FileReportPage = () => {
           </form>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

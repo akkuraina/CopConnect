@@ -2,24 +2,17 @@
 import React, { useState } from "react";
 import {
   Shield,
-  FileText,
-  AlertCircle,
   Search,
   Filter,
   Clock,
   CheckCircle,
-  XCircle,
   Plus,
   User,
-  Calendar,
   MapPin,
-  Bell,
-  BarChart,
   Phone,
   MessageSquare,
   Tag,
   Folder,
-  Activity,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import http from 'http';
 import { Server } from 'socket.io';
 import userRoutes from './routes/userRoutes.js';
-import complaintRoutes from './routes/complaintRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
 
 dotenv.config();
 
@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI,)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -43,7 +43,15 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/users', userRoutes);
-app.use('/api/complaints', complaintRoutes);
+app.use('/api/reports', reportRoutes);
+
+
+// Handle unknown routes
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+export { io };
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
