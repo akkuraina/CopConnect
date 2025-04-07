@@ -60,7 +60,7 @@ const MapStations = () => {
         // Initialize map once we have the location
         if (!map && window.L) {
           const m = window.L.map('map').setView([newLocation.lat, newLocation.lng], 14);
-          window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          window.L.tileLayer('https://{s}.tile.Openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             className: 'map-tiles' // This will help us style the map darker
           }).addTo(m);

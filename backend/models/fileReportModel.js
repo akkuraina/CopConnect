@@ -17,9 +17,13 @@ const ReportSchema = new mongoose.Schema({
     required: true
   },
   filedBy: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: 'User', // Linking the report to the citizen who filed it
     required: true
+  },
+  phone : {
+    type: Number,
+    ref : "User"
   },
   status: {
     type: String,

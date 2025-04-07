@@ -6,6 +6,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 import userRoutes from './routes/userRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import caseRoutes from './routes/policeCaseRoutes.js';
+
 
 dotenv.config();
 
@@ -44,6 +46,8 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/cases', caseRoutes);
+
 
 
 // Handle unknown routes

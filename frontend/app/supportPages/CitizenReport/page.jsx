@@ -12,9 +12,9 @@ const socket = io("http://localhost:5001"); // Update with backend URL
 
 const FileReportPage = () => {
   const [reportData, setReportData] = useState({
-    type: "",
+    reportType: "Pending",
     description: "",
-    location: "",
+    location: { lat: null, lng: null },
     filedBy: "", // Set dynamically after decoding token
     phone: "",   // Store user's phone number
   });
@@ -66,11 +66,10 @@ const FileReportPage = () => {
     e.preventDefault();
 
     try {
-      const token = sessionStorage.getItem("token");
-      // const data = sessionStorage.getItem("data");
+      const token = sessionStorage.getItem("token");    
 
       console.log("Submitting now : ")
-      // console.log("Submitting with data:", data);
+      console.log("this is the report data being sent ",reportData);
 
       const response = await fetch("http://localhost:5001/api/reports/fileReport", {
         method: "POST",
@@ -82,6 +81,8 @@ const FileReportPage = () => {
       });
 
       const data = await response.json();
+      console.log("Response from server:", data);
+
 
       if (response.ok) {
         setMessage("Complaint filed successfully!");
@@ -98,6 +99,22 @@ const FileReportPage = () => {
     // Auto-hide message after 5 seconds
     setTimeout(() => setMessage(null), 5000);
   };
+
+  const getLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setReportData((prevData) => ({
+          ...prevData,
+          location: { lat: latitude, lng: longitude },
+        }));
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+      }
+    );
+  };
+  
 
   return (
     <>
@@ -156,17 +173,33 @@ const FileReportPage = () => {
                 Location
               </label>
               <div className="flex items-center space-x-2 mt-2">
-                <MapPin className="h-6 w-6 text-white" />
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={reportData.location}
-                  onChange={handleChange}
-                  className="w-full p-3 bg-white/10 text-white border border-blue-400/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter the location"
-                />
-              </div>
+  <MapPin className="h-6 w-6 text-white" />
+
+  {/* Input shows lat,lng as a string for reference */}
+  <input
+    type="text"
+    id="location"
+    name="location"
+    value={
+      reportData.location.lat && reportData.location.lng
+        ? `${reportData.location.lat}, ${reportData.location.lng}`
+        : ""
+    }
+    onChange={handleChange}
+    className="w-full p-3 bg-white/10 text-white border border-blue-400/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Enter the location or use current"
+  />
+
+  {/* Button to auto-fill current location */}
+  <button
+    type="button"
+    onClick={getLocation}
+    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+  >
+    Use Current
+  </button>
+</div>
+
             </div>
 
             <div className="flex justify-end space-x-4">
@@ -178,7 +211,7 @@ const FileReportPage = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setReportData({ type: "", description: "", location: "", severity: "low" })}
+                onClick={() => setReportData({ type: "", description: "", location: "", severity: "Low" })}
                 className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
               >
                 Reset

@@ -84,7 +84,7 @@ const TipForm = () => {
                 style={{ height: "400px", width: "100%" }}
                 scrollWheelZoom={false}
               >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer url="https://{s}.tile.Openstreetmap.org/{z}/{x}/{y}.png" />
                 <Marker position={[location.latitude, location.longitude]}>
                   <Popup>Your location</Popup>
                 </Marker>

@@ -1,26 +1,30 @@
-import Report from '../models/fileReport.js';
+import Report from '../models/fileReportModel.js';
 import { io } from '../server.js'; // Importing Socket.IO instance
 
 // File a new complaint
 export const fileReport = async (req, res) => {
 
   try {
-    const { reportType, description, location, filedBy } = req.body;
+    const { reportType, description, location, filedBy, phone } = req.body;
 
     // Validate required fields
-    if (!reportType || !description || !location || !filedBy) {
+    if (!reportType || !description || !location || !filedBy || !phone) {
       return res.status(400).json({ error: "All fields are required: reportType, description, location, filedBy" });
     }
 
     // Validate location format
-    if (typeof location !== 'object' || location.lat === undefined || location.lng === undefined) {
-      return res.status(400).json({ error: "Location must be an object with lat and lng properties" });
+    if (typeof location === "object") {
+      if (location.lat === undefined || location.lng === undefined) {
+        return res.status(400).json({ error: "Location must have lat and lng" });
+      }
+    } else if (typeof location !== "string" || !location.trim()) {
+      return res.status(400).json({ error: "Location must be a valid string or lat/lng object" });
     }
 
     // Validate filedBy as a valid MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(filedBy)) {
-      return res.status(400).json({ error: "Invalid user ID for filedBy" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(filedBy)) {
+    //   return res.status(400).json({ error: "Invalid user ID for filedBy" });
+    // }
 
     // Create and save the report
     const report = await Report.create({
@@ -28,6 +32,7 @@ export const fileReport = async (req, res) => {
       description,
       location,
       filedBy,
+      phone,
       status: "Pending",
       filedAt: new Date(),
     });
