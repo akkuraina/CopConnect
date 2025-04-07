@@ -8,16 +8,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'police_cases',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'mp4'],
-    resource_type: 'auto',
-  },
-});
+export default cloudinary
+
+// const storage = new CloudinaryStorage({
+//   cloudinary: cloudinary,
+//   params: {
+//     folder: 'police_cases',
+//     allowed_formats: ['jpg', 'jpeg', 'png', 'mp4'],
+//     resource_type: 'auto',
+//   },
+// });
 
 // Multer middleware using cloudinary storage
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
-export { cloudinary, upload };
+// export { cloudinary, upload };
+

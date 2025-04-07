@@ -12,18 +12,21 @@ export const fileCase = async (req, res) => {
       victimName,
       victimContactInfo,
       description,
-      evidence,
       additionalInfo,
       status,
       priority
     } = req.body;
 
-    
-
-    console.log("this is what POLICECASECONTROLLER RECEIVED : ", req.body);
     // Cloudinary uploaded file URL (if any)
-    const media = req.file?.path || ''; // Cloudinary returns path as the media URL
+    const media = req.file?.path || ''; // 'path' is the Cloudinary-hosted URL
 
+    console.log("📥 POLICECASECONTROLLER RECEIVED:", {
+      ...req.body,
+      fileUploaded: !!req.file,
+      mediaURL: media,
+    });
+
+    // Required fields check
     if (
       !caseNumber ||
       !reportingOfficer ||
@@ -39,6 +42,7 @@ export const fileCase = async (req, res) => {
       });
     }
 
+    // Create new case document
     const newCase = await PoliceCase.create({
       caseNumber,
       reportingOfficer,
@@ -49,8 +53,7 @@ export const fileCase = async (req, res) => {
       victimName,
       victimContactInfo,
       description,
-      evidence,
-      media,
+      evidence: media, // save Cloudinary file URL under "evidence"
       additionalInfo,
       status,
       priority
@@ -62,7 +65,7 @@ export const fileCase = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error filing case:", error);
+    console.error("❌ Error filing case:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

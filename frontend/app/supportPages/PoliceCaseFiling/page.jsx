@@ -16,7 +16,7 @@ const PoliceReportForm = () => {
     victimContactInfo: "",
     description: "",
     additionalInfo: "",
-    evidence: "",
+    evidence: null,
     status: "Open",
     priority: "Medium",
   });
@@ -32,14 +32,17 @@ const PoliceReportForm = () => {
 
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
+  
     const newFiles = files.map((file) => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
       type: file.type.startsWith("image/") ? "image" : "video",
       preview: URL.createObjectURL(file),
     }));
-    setMediaFiles([...mediaFiles, ...newFiles]);
+  
+    setMediaFiles((prev) => [...prev, ...newFiles]);
   };
+  
 
   const removeFile = (fileId) => {
     setMediaFiles(mediaFiles.filter((file) => file.id !== fileId));
@@ -47,37 +50,39 @@ const PoliceReportForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const form = new FormData();
-
-      // Append text fields
+  
+      // Append all text fields
       Object.entries(formData).forEach(([key, value]) => {
         form.append(key, value);
       });
-
-      // Append media files
+  
+      // Append all media files (images/videos)
       mediaFiles.forEach((media) => {
-        form.append("media", media.file); // 'media' must match backend multer field
+        form.append("media", media.file); // "media" matches multer field
       });
-
-      const token = sessionStorage.getItem("token"); 
-      // console.log("token received is : ", token);
-      console.log("sending the data :", formData);
-
+  
+      const token = sessionStorage.getItem("token");
+  
+      console.log("📤 Sending form data:", formData);
+      console.log("📤 Media files count:", mediaFiles.length);
+  
       const response = await fetch("http://localhost:5001/api/cases/fileCase", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Do not set Content-Type, browser does it for FormData
         },
         body: form,
       });
-
+  
       const result = await response.json();
-
+  
       if (response.ok) {
-        alert("Report submitted successfully!");
-        // Clear form after submission
+        alert("✅ Report submitted successfully!");
+  
+        // Reset form fields
         setFormData({
           caseNumber: "",
           reportingOfficer: "",
@@ -93,15 +98,18 @@ const PoliceReportForm = () => {
           status: "Open",
           priority: "Medium",
         });
+  
         setMediaFiles([]);
       } else {
-        alert(result.message || "Submission failed.");
+        alert(result.message || "❌ Submission failed.");
+        console.error("❌ Server response:", result);
       }
     } catch (err) {
-      console.error(err);
+      console.error("❌ Submission error:", err);
       alert("An error occurred while submitting the report.");
     }
   };
+  
 
   return (
     <>

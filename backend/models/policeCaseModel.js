@@ -39,23 +39,24 @@ const PoliceCaseSchema = new mongoose.Schema({
     default: "",
   },
   evidence: {
-    type: String, // store file path or cloud URL
+    type: String, // optional field, if any notes about the evidence
   },
   media: {
-    type: String, // image/video URL or path
+    type: [String], // ✅ Array of Cloudinary URLs for images/videos
+    default: [],
   },
   additionalInfo: {
     type: String,
   },
   status: {
     type: String,
-    enum: String,
-    default: 'Open',
+    enum: ['Open', 'Closed', 'In Progress'],
+    required: true
   },
   priority: {
     type: String,
-    enum: String,
-    default: 'Medium',
+    enum: ['Low', 'Medium', 'High'],
+    required: true
   }
 });
 
