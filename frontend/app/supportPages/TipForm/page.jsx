@@ -1,23 +1,39 @@
 'use client'
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css"; // Import Leaflet CSS
+import dynamic from 'next/dynamic';
+import "leaflet/dist/leaflet.css";
 import Footer from "@/app/HelpingComponents/Footer";
-import UploadEvidence from "@/app/HelpingComponents/uploadEvidence";
+import UploadEvidence from "@/app/HelpingComponents/UploadEvidence";
 import CameraCapture from "@/app/HelpingComponents/cameraCapture";
+
+const MapSection = ({ location }) => {
+  const { MapContainer, TileLayer, Marker, Popup } = require("react-leaflet");
+
+  return (
+    <>
+      <p className="text-center mt-4 text-lg text-blue-300">
+        Location: {location.latitude}, {location.longitude}
+      </p>
+      <MapContainer
+        center={[location.latitude, location.longitude]}
+        zoom={17}
+        style={{ height: "400px", width: "100%" }}
+        scrollWheelZoom={false}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <Marker position={[location.latitude, location.longitude]}>
+          <Popup>Your location</Popup>
+        </Marker>
+      </MapContainer>
+    </>
+  );
+};
+
+const DynamicMap = dynamic(() => Promise.resolve(MapSection), { ssr: false });
 
 const TipForm = () => {
   const [location, setLocation] = useState(null);
   const [tip, setTip] = useState("");
-  const [mapLoaded, setMapLoaded] = useState(false);  // Track map loading
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      import('leaflet').then(() => {
-        setMapLoaded(true); // Set map as loaded once Leaflet is available
-      });
-    }
-  }, []);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -37,12 +53,33 @@ const TipForm = () => {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting tip:", { tip, location });
-  };
 
-  if (!mapLoaded) return <p className="text-center text-lg text-blue-400">Loading map...</p>;
+    try {
+      const response = await fetch("http://localhost:5001/api/anonymous/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ tip, location: { lat: location.latitude, lng: location.longitude } })
+      });
+
+      const data = await response.json();
+      console.log("Response from backend:", data);
+
+      if (response.ok) {
+        alert("Anonymous tip submitted successfully!");
+        setTip("");
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert("Failed to submit tip. Check console for details.");
+    }
+  };
 
   return (
     <>
@@ -65,35 +102,13 @@ const TipForm = () => {
           </form>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10 mb-6">
-          {/* Upload Section */}
+            <UploadEvidence />
+            <CameraCapture />
+          </div>
 
-          <UploadEvidence />
-
-          {/* Camera Section */}
-          <CameraCapture />
+          {location && <DynamicMap location={location} />}
         </div>
 
-          {location && (
-            <>
-              <p className="text-center mt-4 text-lg text-blue-300">
-                Location: {location.latitude}, {location.longitude}
-              </p>
-              <MapContainer
-                center={[location.latitude, location.longitude]}
-                zoom={17}
-                style={{ height: "400px", width: "100%" }}
-                scrollWheelZoom={false}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[location.latitude, location.longitude]}>
-                  <Popup>Your location</Popup>
-                </Marker>
-              </MapContainer>
-            </>
-          )}
-        </div >
-
-        {/* Footer */}
         <Footer />
       </div>
     </>

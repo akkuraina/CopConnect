@@ -1,10 +1,7 @@
 "use client";
 import Footer from "@/app/HelpingComponents/Footer";
-import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
-import { MapPin, FileText, AlertTriangle } from "react-feather"; 
-
-const socket = io("http://localhost:5001"); // Update with your backend URL
+import React, { useState } from "react";
+import { MapPin, FileText } from "react-feather";
 
 const FileReportPage = () => {
   const [reportData, setReportData] = useState({
@@ -15,19 +12,6 @@ const FileReportPage = () => {
   });
 
   const [message, setMessage] = useState(null);
-
-  useEffect(() => {
-    // Listen for real-time updates
-    socket.on("new_complaint", (complaint) => {
-      console.log("New complaint received:", complaint);
-      setMessage(`New complaint submitted: ${complaint.type}`);
-      
-      // Auto-hide the message after 5 seconds
-      setTimeout(() => setMessage(null), 5000);
-    });
-
-    return () => socket.off("new_complaint"); // Cleanup on unmount
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +25,7 @@ const FileReportPage = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:3000/api/complaints", {
+      const response = await fetch("http://localhost:5001/api/anonymous/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(reportData),
@@ -50,7 +34,7 @@ const FileReportPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("Complaint filed successfully!");
+        setMessage("Anonymous complaint filed successfully!");
         setReportData({ type: "", description: "", location: "", severity: "low" });
       } else {
         setMessage(data.error || "Failed to submit complaint.");
@@ -60,8 +44,7 @@ const FileReportPage = () => {
       console.error("Submission error:", error);
     }
 
-    // Auto-hide message after 5 seconds
-    setTimeout(() => setMessage(null), 5000);
+    setTimeout(() => setMessage(null), 5001);
   };
 
   return (
@@ -72,7 +55,7 @@ const FileReportPage = () => {
             <div className="bg-white/10 p-3 rounded-lg">
               <FileText className="h-6 w-6 text-white" />
             </div>
-            <h2 className="text-xl font-semibold">File a New Report</h2>
+            <h2 className="text-xl font-semibold">Submit Anonymous Complaint</h2>
           </div>
 
           {message && (
